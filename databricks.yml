@@ -1,0 +1,39 @@
+bundle:
+  name: my_model_deployment_project
+
+include:
+  - resources/*
+
+variables:
+  policy_id:
+    description: Policy ID for cluster
+  pause_status:
+    description: Pause status for workflow
+    default: PAUSED
+  env_prefix:
+    description: Environment prefix used in the catalog name to distinguish dev, qa and prod
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://lego-ssc-dev.cloud.databricks.com
+    variables:
+      policy_id: A963D86B02001DC8
+      env_prefix: 'dev_'
+
+  qa:
+    mode: development
+    workspace:
+      host: https://lego-ssc-qa.cloud.databricks.com
+    variables:
+      policy_id: A96377E9F70003FA
+      env_prefix: 'qa_'
+
+  prod:
+    workspace:
+      host: https://lego-ssc-prod.cloud.databricks.com
+    variables:
+      policy_id: A96377E9F70003FE
+      pause_status: UNPAUSED
+      env_prefix: ''

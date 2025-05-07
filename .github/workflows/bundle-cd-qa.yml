@@ -1,0 +1,23 @@
+name: Deployment QA
+
+concurrency: "1"
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  deploy-qa:
+    name: Deploy QA
+    runs-on: ubuntu-latest
+    environment: qa
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: deploy
+        uses: ./.github/actions/deploy
+        with:
+          databricks_client_id: ${{ secrets.CLIENT_ID }}
+          databricks_client_secret: ${{ secrets.CLIENT_SECRET }}
+          environment: qa

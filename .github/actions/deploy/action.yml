@@ -1,0 +1,44 @@
+name: Deploy
+description: Deployment Action
+
+inputs:
+  environment:
+    description: "Deployment environment"
+    required: true
+  databricks_client_id:
+    description: "Databricks OAuth client ID"
+    required: true
+  databricks_client_secret:
+    description: "Databricks OAuth client secret"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        # Adjust to the Python version in the Databricks runtime of your cluster.
+        # Eg. the Databricks runtime 14.3 LTS uses Python 3.10.12: https://docs.databricks.com/aws/en/release-notes/runtime/14.3lts#system-environment
+        # Keep it in sync with the version specified in pyproject.toml
+        python-version: 3.10.12
+
+    - name: Install poetry
+      shell: bash
+      run: pip install 'poetry==2.1.1'
+    
+    - uses: databricks/setup-cli@main
+      with:
+        version: 0.222.0
+
+    - name: Deploy
+      shell: bash
+      working-directory: .
+      env:
+        DATABRICKS_CLIENT_ID: ${{ inputs.databricks_client_id }}
+        DATABRICKS_CLIENT_SECRET: ${{ inputs.databricks_client_secret }}
+        DATABRICKS_BUNDLE_ENV: ${{ inputs.environment }}
+      run: |
+        databricks bundle deploy

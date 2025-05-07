@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "stub"
+version = "0.1.0"
+description = "Sample package for my_model_deployment_project"
+authors = ["Generator <aparna.harichandran@lego.com>"]
+
+[tool.poetry.dependencies]
+# Adjust to the Python version in the Databricks runtime of your cluster.
+# Eg. the Databricks runtime 14.3 LTS uses Python 3.10.12: https://docs.databricks.com/aws/en/release-notes/runtime/14.3lts#system-environment
+# Keep it in sync with the version specific in the Github actions and/or workflows
+python = "3.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

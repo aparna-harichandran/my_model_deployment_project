@@ -1,0 +1,52 @@
+resources:
+  jobs:
+    ml_pipeline_job:
+      name: my_model_deployment_project_ml_pipeline_job
+
+      email_notifications:
+        on_failure:
+        - aparna.harichandran@lego.com
+      schedule:
+        quartz_cron_expression: "0 0 12 * * ?" # Note: CHANGE TO FIT YOUR SCHEDULE
+        timezone_id: Europe/Copenhagen
+        pause_status: ${var.pause_status}
+
+      tasks:
+        - task_key: train
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/ml_pipeline/train.py
+            base_parameters:
+              env_prefix: ${var.env_prefix}
+        
+        - task_key: deploy_serve
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/ml_pipeline/deploy_serve.py
+            base_parameters:
+              env_prefix: ${var.env_prefix}
+          depends_on:
+            - task_key: train
+        
+      job_clusters:
+        - job_cluster_key: job_cluster
+          new_cluster:
+            spark_version: 15.4.x-cpu-ml-scala2.12
+            spark_conf:
+              spark.databricks.cluster.profile: singleNode
+              spark.master: local[*, 4]
+            policy_id: ${var.policy_id}
+            data_security_mode: SINGLE_USER # Optimal for data access. Change to SINGLE_USER if needed. Check limitations here: https://docs.databricks.com/en/compute/access-mode-limitations.html
+            node_type_id: i4i.large
+            driver_node_type_id: i4i.large
+            num_workers: 0
+            aws_attributes:
+              first_on_demand: 1
+              zone_id: "auto"
+            custom_tags:
+              ResourceClass: SingleNode
+              SOURCE: "other"
+
+      permissions:
+        - group_name: c1.app.access.sscdp.ai_agency.developer # Note: some groups have a number in the name
+          level: CAN_MANAGE_RUN

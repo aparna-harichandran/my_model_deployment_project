@@ -1,0 +1,23 @@
+name: Deployment PROD
+
+concurrency: "1"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy-prod:
+    name: Deploy PROD
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: deploy
+        uses: ./.github/actions/deploy
+        with:
+          databricks_client_id: ${{ secrets.CLIENT_ID }}
+          databricks_client_secret: ${{ secrets.CLIENT_SECRET }}
+          environment: prod

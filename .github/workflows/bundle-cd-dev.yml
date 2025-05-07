@@ -1,0 +1,24 @@
+name: Deployment DEV
+
+concurrency: "1"
+
+on:
+  push:
+    branches: ["dev/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy-dev:
+    name: Deploy DEV
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: deploy
+        uses: ./.github/actions/deploy
+        with:
+          databricks_client_id: ${{ secrets.CLIENT_ID }}
+          databricks_client_secret: ${{ secrets.CLIENT_SECRET }}
+          environment: dev
