@@ -87,12 +87,14 @@ print(logged_model)
 # Testing the model
 # Load model as a PyFuncModel.
 loaded_model = mlflow.pyfunc.load_model(logged_model)
-X, y = make_classification(n_samples=1, n_features=2, n_informative=2, n_redundant=0, random_state=42)
-loaded_model.predict(X)
+loaded_model.predict(X_test)
 
 # COMMAND ----------
 
 # Register the model to Unity Catalog Model Registry
+
+# Define widgets for passing arguments to the notebook
+dbutils.widgets.text("env_prefix", "dev_")
 env_prefix = dbutils.widgets.get("env_prefix")  # Fetching the environment prefix from task input arguments
 
 catalog_name = f"{env_prefix}digital_technology"
