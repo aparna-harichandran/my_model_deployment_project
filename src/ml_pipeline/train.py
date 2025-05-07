@@ -36,7 +36,7 @@ data, target = load_wine(return_X_y=True, as_frame=True)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.25, random_state=16)
 
-run_name = "my_model_deployment_project_ml_pipeline_model"    # Replace with your model name
+run_name = "wine_classifier_ml_pipeline_model"    # Replace with your model name
 
 with mlflow.start_run(run_name=run_name):
     # Create a LogisticRegression instance with multi_class set to "multinomial"
