@@ -1,5 +1,4 @@
 # Databricks notebook source
-
 # MAGIC %md
 # MAGIC # Example of a Training Job
 # MAGIC
@@ -12,6 +11,7 @@ import mlflow.sklearn
 import cloudpickle
 import sklearn
 import numpy
+from sklearn.datasets import load_wine
 from mlflow.models.signature import infer_signature
 from mlflow.utils.environment import _mlflow_conda_env, _mlflow_additional_pip_env
 from sklearn.datasets import make_classification
@@ -29,18 +29,19 @@ class SklearnModelWrapper(mlflow.pyfunc.PythonModel):
 
     def predict(self, context, model_input):
         return self.model.predict_proba(model_input)[:,1]
+    
+# Load dataset
+data, target = load_wine(return_X_y=True, as_frame=True)
 
-# Generate a binary classification dataset with 10 samples, 2 features
-X, y = make_classification(n_samples=100, n_features=2, n_informative=2, n_redundant=0, random_state=42)
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=16)
+X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.25, random_state=16)
 
-run_name = "my_model_deployment_project_ml_pipeline_model"    # Replace with your model name
+run_name = "wine_classifier_ml_pipeline_model"    # Replace with your model name
 
 with mlflow.start_run(run_name=run_name):
-    # Instantiate the model
-    model = LogisticRegression(random_state=16)
-    model.fit(X_train, y_train) # Train model
+    # Create a LogisticRegression instance with multi_class set to "multinomial"
+    model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=16)
+    model.fit(X_train, y_train)  # Train model
     wrappedModel = SklearnModelWrapper(model)
     # Log the model with a signature that defines the schema of the model's inputs and outputs.
     # When the model is deployed, this signature will be used to validate inputs.
@@ -75,6 +76,7 @@ with mlflow.start_run(run_name=run_name):
     )
 
 # COMMAND ----------
+
 # Get the latest experiment run
 latest_run_id = mlflow.last_active_run().info.run_id
 print(latest_run_id)
@@ -85,12 +87,14 @@ print(logged_model)
 # Testing the model
 # Load model as a PyFuncModel.
 loaded_model = mlflow.pyfunc.load_model(logged_model)
-X, y = make_classification(n_samples=1, n_features=2, n_informative=2, n_redundant=0, random_state=42)
-loaded_model.predict(X)
+loaded_model.predict(X_test)
 
 # COMMAND ----------
 
 # Register the model to Unity Catalog Model Registry
+
+# Define widgets for passing arguments to the notebook
+dbutils.widgets.text("env_prefix", "dev_")
 env_prefix = dbutils.widgets.get("env_prefix")  # Fetching the environment prefix from task input arguments
 
 catalog_name = f"{env_prefix}digital_technology"
